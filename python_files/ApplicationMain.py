@@ -1,10 +1,10 @@
 import tkinter as tk
-from match_data_gatherer import Constants
-from match_data_gatherer import StartPage
-from match_data_gatherer import NewMatchDataPage
+from python_files import Constants
+from python_files import StartPage
+from python_files import NewMatchDataPage
 
 
-class WMAApp(tk.Tk):
+class AppMain(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title(Constants.APPLICATION_NAME)
@@ -29,5 +29,5 @@ class WMAApp(tk.Tk):
 
 
 if __name__ == '__main__':
-    app = WMAApp()
+    app = AppMain()
     app.mainloop()
