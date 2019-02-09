@@ -1,9 +1,11 @@
 import matplotlib
 matplotlib.use("TkAgg")
 import tkinter as tk
+from tkinter.filedialog import askopenfilename
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import json
 
 
 class NewMatchDataPage(tk.Frame):
@@ -11,7 +13,9 @@ class NewMatchDataPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         self.filename = ""
+        self.file_exists = False
         self.attacks = []
+        self.output_object = {"attacks": self.attacks}
         self.img = mpimg.imread("../data/volleyball_court.png")
 
         self.team_name_label = tk.Label(self, text="Team name")
@@ -25,18 +29,33 @@ class NewMatchDataPage(tk.Frame):
                                             command=lambda: self.second_screen())
         self.opponent_name_entry.bind('<Return>', self.second_screen)
 
+        self.get_existing_file_button = tk.Button(self, text="Add to existing match",
+                                                  command=lambda: self.get_existing_file())
+
         self.team_name_label.pack()
         self.team_name_entry.pack()
         self.opponent_name_label.pack()
         self.opponent_name_entry.pack()
         self.create_file_button.pack()
+        self.get_existing_file_button.pack()
+
+    def get_existing_file(self, event=None):
+        filename = askopenfilename()
+        if filename == '':
+            return
+        self.file_exists = True
+        self.filename = filename.split("/")[-1]
+        with open(filename, "r") as file:
+            self.output_object = json.load(file)
+        self.attacks = self.output_object["attacks"]
+        self.second_screen()
 
     def second_screen(self, event=None):
-        tn = self.team_name_entry.get()
-        on = self.opponent_name_entry.get()
-        date = datetime.datetime.today().strftime('%d-%m-%Y')
-        self.filename = tn + "-" + on + "-" + date + ".json"
-        print(self.filename)
+        if not self.file_exists:
+            tn = self.team_name_entry.get()
+            on = self.opponent_name_entry.get()
+            date = datetime.datetime.today().strftime('%d-%m-%Y')
+            self.filename = tn + "-" + on + "-" + date + ".json"
         self.cleanup_first_screen()
         self.setup_second_screen()
 
@@ -46,6 +65,7 @@ class NewMatchDataPage(tk.Frame):
         self.opponent_name_label.destroy()
         self.opponent_name_entry.destroy()
         self.create_file_button.destroy()
+        self.get_existing_file_button.destroy()
 
     def setup_second_screen(self):
         self.focus_set()
@@ -72,12 +92,12 @@ class NewMatchDataPage(tk.Frame):
         new_attack = [self.orientation()*points[0][0], self.orientation()*points[0][1],
                       self.orientation()*points[1][0], self.orientation()*points[1][1],
                       int(attack_popup.shirt_number), attack_popup.hit.get(), len(self.attacks)]
-        print(new_attack)
         self.attacks.append(new_attack)
         plt.close()
 
     def save_and_destroy(self):
-        # Save
+        with open("../data/{}".format(self.filename), "w") as file:
+            json.dump(self.output_object, file)
         self.destroy()
 
     def orientation(self):
