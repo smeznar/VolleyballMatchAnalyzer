@@ -6,6 +6,7 @@ import datetime
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import json
+from python_files import Constants as C
 
 
 class NewMatchDataPage(tk.Frame):
@@ -18,6 +19,7 @@ class NewMatchDataPage(tk.Frame):
         self.output_object = {"attacks": self.attacks}
         self.img = mpimg.imread("../data/volleyball_court.png")
 
+        title = tk.Label(self, text="New Data", font=("Helvetica", 20))
         self.team_name_label = tk.Label(self, text="Team name")
         self.opponent_name_label = tk.Label(self, text="Opponent name")
 
@@ -32,12 +34,19 @@ class NewMatchDataPage(tk.Frame):
         self.get_existing_file_button = tk.Button(self, text="Add to existing match",
                                                   command=lambda: self.get_existing_file())
 
-        self.team_name_label.pack()
-        self.team_name_entry.pack()
-        self.opponent_name_label.pack()
-        self.opponent_name_entry.pack()
-        self.create_file_button.pack()
-        self.get_existing_file_button.pack()
+        self.back_button = tk.Button(self, text="Back", command=lambda: self.destroy())
+
+        title.grid(row=0, column=1, pady=2*C.NORMAL_PADDING)
+        self.team_name_label.grid(row=1, column=0, pady=C.NORMAL_PADDING)
+        self.team_name_entry.grid(row=1, column=1, columnspan=2, pady=C.NORMAL_PADDING)
+        self.opponent_name_label.grid(row=2, column=0, pady=C.NORMAL_PADDING)
+        self.opponent_name_entry.grid(row=2, column=1, columnspan=2, pady=C.NORMAL_PADDING)
+        self.back_button.grid(row=3, column=0, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        self.get_existing_file_button.grid(row=3, column=1, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        self.create_file_button.grid(row=3, column=2, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
 
     def get_existing_file(self, event=None):
         filename = askopenfilename()
@@ -66,22 +75,26 @@ class NewMatchDataPage(tk.Frame):
         self.opponent_name_entry.destroy()
         self.create_file_button.destroy()
         self.get_existing_file_button.destroy()
+        self.back_button.destroy()
 
     def setup_second_screen(self):
         self.focus_set()
-        new_attack_button = tk.Button(self, text="Add new Attack",
+        new_attack_button = tk.Button(self, text="Add new attack",
                                       command=lambda: self.add_new_attack())
         self.bind('<a>', lambda x: self.add_new_attack())
         self.flip_field = tk.IntVar()
         fo_checkbox = tk.Checkbutton(self, text="Flip field orientation", variable=self.flip_field)
 
-        save_and_quit_button = tk.Button(self, text="Save and go back to main menu",
+        save_and_quit_button = tk.Button(self, text="Save and go back",
                                          command=lambda: self.save_and_destroy())
         self.bind('<s>', lambda x: self.save_and_destroy())
 
-        new_attack_button.pack()
-        fo_checkbox.pack()
-        save_and_quit_button.pack()
+        new_attack_button.grid(row=1, column=1, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        save_and_quit_button.grid(row=2, column=0, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        fo_checkbox.grid(row=2, column=2, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
 
     def add_new_attack(self):
         plt.imshow(self.img, extent=[-12.5, 12.5, -7.875, 7.875])
@@ -110,15 +123,16 @@ class NewMatchDataPage(tk.Frame):
 class NewAttackPopup(object):
     def __init__(self, master):
         self.top = tk.Toplevel(master)
+        self.top.geometry("300x100")
         self.shirt_number = 0
-        shirt_number_label = tk.Label(self.top, text="Attacker's shirt number")
+        shirt_number_label = tk.Label(self.top, text="Shirt number")
         vcmd = (master.register(self.validate),
                 '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
         self.shirt_number_entry = tk.Entry(self.top, validate='key', validatecommand=vcmd)
         add_button = tk.Button(self.top, text='Add attack',
                                command=lambda: self.cleanup())
 
-        hit_label = tk.Label(self.top, text="Hit, Miss or Pass")
+        hit_label = tk.Label(self.top, text="Hit, Miss or Pass:")
         self.hit = tk.StringVar()
         self.hit.set("P")
         hit_rb = tk.Radiobutton(self.top, text="Hit", variable=self.hit, value="H")
@@ -128,15 +142,18 @@ class NewAttackPopup(object):
         self.shirt_number_entry.bind('<m>', lambda x: self.hit.set("M"))
         self.shirt_number_entry.bind('<p>', lambda x: self.hit.set("P"))
         self.shirt_number_entry.focus_set()
-
-        shirt_number_label.pack()
-        self.shirt_number_entry.pack()
-        add_button.pack()
-        hit_label.pack()
-        hit_rb.pack(anchor=tk.W)
-        miss_rb.pack(anchor=tk.W)
-        pass_rb.pack(anchor=tk.W)
         self.top.bind('<Return>', self.cleanup)
+
+        shirt_number_label.grid(row=0, column=0)
+        self.shirt_number_entry.grid(row=0, column=1, columnspan=2)
+        hit_label.grid(row=1, column=1)
+        hit_rb.grid(row=2, column=0)
+        miss_rb.grid(row=2, column=1)
+        pass_rb.grid(row=2, column=2)
+        add_button.grid(row=3, column=1, pady=C.NORMAL_PADDING)
+        self.top.columnconfigure(0, weight=1)
+        self.top.columnconfigure(1, weight=1)
+        self.top.columnconfigure(2, weight=1)
 
     def cleanup(self, event=None):
         self.shirt_number = self.shirt_number_entry.get()

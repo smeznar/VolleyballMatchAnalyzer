@@ -7,7 +7,7 @@ class AppMain(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title(Constants.APPLICATION_NAME)
-        self.geometry("500x250")
+        self.geometry(Constants.WINDOW_SIZE)
 
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
