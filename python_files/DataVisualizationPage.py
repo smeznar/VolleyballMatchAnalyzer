@@ -1,5 +1,6 @@
 import tkinter as tk
 from python_files import Constants as C
+from python_files import AttackVisualizationPage
 from tkinter.filedialog import askopenfilename
 import json
 
@@ -37,7 +38,7 @@ class VisualizationPage(tk.Frame):
         if self.data is None:
             self.select_file_popup()
         else:
-            pass
+            AttackVisualizationPage.AttackVisualizationPage(self, self.data["attacks"])
 
     def select_file_popup(self):
         top = tk.Toplevel()
