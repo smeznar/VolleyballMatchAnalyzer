@@ -8,6 +8,7 @@ import matplotlib.image as mpimg
 import json
 from python_files import Constants as C
 from python_files import NewAtackPage
+from python_files import NewPassPage
 
 AUTOSAVE_AFTER = 10
 autosave_counter = 0
@@ -20,7 +21,8 @@ class NewMatchDataPage(tk.Frame):
         self.filename = ""
         self.file_exists = False
         self.attacks = []
-        self.output_object = {"attacks": self.attacks}
+        self.passes = []
+        self.output_object = {"attacks": self.attacks, "passes": self.passes}
         self.img = mpimg.imread("../data/volleyball_court.png")
 
         title = tk.Label(self, text="New Data", font=("Helvetica", 20))
@@ -60,7 +62,10 @@ class NewMatchDataPage(tk.Frame):
         self.filename = filename.split("/")[-1]
         with open(filename, "r") as file:
             self.output_object = json.load(file)
-        self.attacks = self.output_object["attacks"]
+        self.attacks = self.output_object["attacks"] if "attacks" in self.output_object.keys() else []
+        self.passes = self.output_object["passes"] if "passes" in self.output_object.keys() else []
+        self.output_object["attacks"] = self.attacks
+        self.output_object["passes"] = self.passes
         self.second_screen()
 
     def second_screen(self, event=None):
@@ -86,6 +91,11 @@ class NewMatchDataPage(tk.Frame):
         new_attack_button = tk.Button(self, text="Add new attack",
                                       command=lambda: self.add_new_attack())
         self.bind('<a>', lambda x: self.add_new_attack())
+
+        new_pass_button = tk.Button(self, text="Add new pass",
+                                      command=lambda: self.add_new_pass())
+        self.bind('<p>', lambda x: self.add_new_pass())
+
         self.flip_field = tk.IntVar()
         fo_checkbox = tk.Checkbutton(self, text="Flip field orientation", variable=self.flip_field)
 
@@ -94,8 +104,9 @@ class NewMatchDataPage(tk.Frame):
         self.bind('<s>', lambda x: self.save_and_destroy())
 
         new_attack_button.grid(row=1, column=1, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
-        save_and_quit_button.grid(row=2, column=0, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
-        fo_checkbox.grid(row=2, column=2, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        new_pass_button.grid(row=2, column=1, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        save_and_quit_button.grid(row=3, column=0, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
+        fo_checkbox.grid(row=3, column=2, pady=C.NORMAL_PADDING, padx=C.NORMAL_PADDING)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
@@ -111,6 +122,24 @@ class NewMatchDataPage(tk.Frame):
                       self.orientation()*points[1][0], self.orientation()*points[1][1],
                       int(attack_popup.shirt_number), attack_popup.hit.get(), len(self.attacks)]
         self.attacks.append(new_attack)
+        plt.close()
+        autosave_counter += 1
+        if autosave_counter == 10:
+            autosave_counter = 0
+            with open("../data/{}".format(self.filename), "w") as file:
+                json.dump(self.output_object, file)
+
+    def add_new_pass(self):
+        global autosave_counter
+        plt.imshow(self.img, extent=[-12.5, 12.5, -7.875, 7.875])
+        points = plt.ginput(2, show_clicks=True)
+        pass_popup = NewPassPage.NewPassPopup(self)
+        self.master.wait_window(pass_popup.top)
+
+        new_pass = [self.orientation()*points[0][0], self.orientation()*points[0][1],
+                      self.orientation()*points[1][0], self.orientation()*points[1][1],
+                      int(pass_popup.shirt_number), pass_popup.received.get(), pass_popup.upper.get(), len(self.passes)]
+        self.passes.append(new_pass)
         plt.close()
         autosave_counter += 1
         if autosave_counter == 10:

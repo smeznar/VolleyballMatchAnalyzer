@@ -1,6 +1,7 @@
 import tkinter as tk
 from python_files import Constants as C
 from python_files import AttackVisualizationPage
+from python_files import PassVisualizationPage
 from tkinter.filedialog import askopenfilename
 import json
 
@@ -14,6 +15,8 @@ class VisualizationPage(tk.Frame):
         title = tk.Label(self, text="Data Visualization", font=("Helvetica", 20))
         visualize_attacks_button = tk.Button(self, text="Visualize attacks",
                                              command=lambda: self.visualize_attacks())
+        visualize_passes_button = tk.Button(self, text="Visualize passes",
+                                            command=lambda: self.visualize_passes())
         back_button = tk.Button(self, text="Back",
                                 command=lambda: self.destroy())
         select_file_button = tk.Button(self, text="Select file",
@@ -21,8 +24,9 @@ class VisualizationPage(tk.Frame):
 
         title.grid(row=0, column=1, pady=2*C.NORMAL_PADDING)
         visualize_attacks_button.grid(row=1, column=1, pady=C.NORMAL_PADDING)
-        back_button.grid(row=2, column=0, pady=C.NORMAL_PADDING)
-        select_file_button.grid(row=2, column=2, pady=C.NORMAL_PADDING)
+        visualize_passes_button.grid(row=2, column=1, pady=C.NORMAL_PADDING)
+        back_button.grid(row=3, column=0, pady=C.NORMAL_PADDING)
+        select_file_button.grid(row=3, column=2, pady=C.NORMAL_PADDING)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
@@ -38,7 +42,15 @@ class VisualizationPage(tk.Frame):
         if self.data is None:
             self.select_file_popup()
         else:
-            AttackVisualizationPage.AttackVisualizationPage(self, self.data["attacks"])
+            AttackVisualizationPage.AttackVisualizationPage(self,
+                                                            self.data["attacks"] if "attacks" in self.data.keys() else [])
+
+    def visualize_passes(self):
+        if self.data is None:
+            self.select_file_popup()
+        else:
+            PassVisualizationPage.PassVisualizationPage(self,
+                                                        self.data["passes"] if "passes" in self.data.keys() else [])
 
     def select_file_popup(self):
         top = tk.Toplevel()
